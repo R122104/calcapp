@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>わくわく計算カード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Hiragino Maru Gothic ProN', 'Rounded Mplus 1c', 'Kosugi Maru', sans-serif;
+        }
+
+        body {
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* スタート画面 */
+        #start-screen {
+            padding: 20px;
+        }
+
+        .settings-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .big-emoji {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .settings-options {
+            margin-bottom: 20px;
+        }
+
+        .setting-row {
+            margin-bottom: 15px;
+        }
+
+        .setting-label {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .setting-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .option-btn, .op-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .option-btn.active, .op-btn.active {
+            background-color: #4285f4;
+            color: white;
+            font-weight: bold;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* ゲーム画面 */
+        #game-screen {
+            display: none;
+        }
+
+        /* ヘッダー部分 */
+        .header {
+            padding: 10px;
+        }
+
+        .title {
+            background-color: #4285f4;
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .emoji {
+            font-size: 28px;
+            margin-right: 10px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* 進捗バー */
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background-color: #f1f3f5;
+            border-radius: 8px;
+        }
+
+        .progress-text {
+            font-weight: bold;
+        }
+
+        .points {
+            background-color: #4285f4;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* 問題カード */
+        .problem-card {
+            background-color: #e7f5ff;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .problem {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .number {
+            display: inline-block;
+            background-color: white;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+
+        .operator {
+            display: inline-block;
+            margin: 0 5px;
+        }
+
+        .equals {
+            display: inline-block;
+            margin: 0 5px;
+        }
+
+        .answer-placeholder {
+            display: inline-block;
+            background-color: #fa5252;
+            color: white;
+            width: 50px;
+            height: 50px;
+            line-height: 50px;
+            border-radius: 8px;
+            margin: 0 5px;
+        }
+
+        /* 回答エリア */
+        .answer-area {
+            padding: 0 10px 15px;
+        }
+
+        .message-box {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 8px;
+            background-color: #f1f3f5;
+        }
+
+        .message-box.correct {
+            background-color: #ebfbee;
+            color: #12b886;
+        }
+
+        .message-box.incorrect {
+            background-color: #fff5f5;
+            color: #fa5252;
+        }
+
+        /* 数字キーパッド */
+        .number-pad {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .number-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .number-key, .check-answer-btn {
+            flex: 1;
+            aspect-ratio: 1;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            background-color: white;
+            border-radius: 8px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .check-answer-btn {
+            flex: 2;
+            aspect-ratio: initial;
+            background-color: #4285f4;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* 結果画面 */
+        #result-screen {
+            display: none;
+            padding: 15px;
+        }
+
+        .result-header {
+            background-color: #fff3bf;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .result-stats {
+            background-color: #f1f3f5;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-weight: bold;
+        }
+
+        .retry-btn, .review-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        #review-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+
+        #review-area h3 {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .review-problem {
+            background-color: #f1f3f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        /* 正解・不正解表示用 */
+        .correct {
+            color: #12b886;
+        }
+
+        .incorrect {
+            color: #fa5252;
+        }
+
+        /* アニメーション */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .pop {
+            animation: pop 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="card">
+            <!-- スタート画面 -->
+            <div id="start-screen">
+                <div class="settings-header">
+                    <div class="big-emoji">😊</div>
+                    <h2>わくわく計算カード</h2>
+                </div>
+                
+                <div class="settings-options">
+                    <div class="setting-row">
+                        <div class="setting-label">むずかしさ:</div>
+                        <div class="setting-buttons">
+                            <button class="option-btn active" id="easy-btn">かんたん</button>
+                            <button class="option-btn" id="normal-btn">ふつう</button>
+                            <button class="option-btn" id="hard-btn">むずかしい</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <div class="setting-label">もんだいすう:</div>
+                        <div class="setting-buttons">
+                            <button class="option-btn" data-value="5">5</button>
+                            <button class="option-btn active" data-value="10">10</button>
+                            <button class="option-btn" data-value="20">20</button>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <div class="setting-label">けいさんしゅるい:</div>
+                        <div class="setting-buttons">
+                            <button class="op-btn active" data-op="+">+</button>
+                            <button class="op-btn" data-op="-">-</button>
+                            <button class="op-btn" data-op="×">×</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="start-btn" class="start-btn">はじめる</button>
+            </div>
+
+            <!-- ゲーム画面 -->
+            <div id="game-screen">
+                <!-- ヘッダー部分 -->
+                <div class="header">
+                    <div class="title">
+                        <div class="emoji">😊</div>
+                        <h1>わくわく計算カード</h1>
+                    </div>
+                    
+                    <!-- 進捗表示 -->
+                    <div class="progress-bar">
+                        <div class="progress-text">
+                            <span id="current-problem">1</span> / <span id="total-problems">10</span>
+                        </div>
+                        <div class="points" id="points">100ぴょう</div>
+                    </div>
+                </div>
+                
+                <!-- 問題表示エリア -->
+                <div class="problem-card">
+                    <div class="problem">
+                        <span id="num1" class="number">7</span>
+                        <span id="operator" class="operator">+</span>
+                        <span id="num2" class="number">5</span>
+                        <span class="equals">=</span>
+                        <span class="answer-placeholder">?</span>
+                    </div>
+                </div>
+                
+                <!-- 回答入力エリア -->
+                <div class="answer-area">
+                    <div class="message-box" id="message-box">こたえをいれてね</div>
+                    
+                    <!-- 数字キーパッド -->
+                    <div class="number-pad">
+                        <div class="number-row">
+                            <button class="number-key" data-value="1">1</button>
+                            <button class="number-key" data-value="2">2</button>
+                            <button class="number-key" data-value="3">3</button>
+                        </div>
+                        <div class="number-row">
+                            <button class="number-key" data-value="4">4</button>
+                            <button class="number-key" data-value="5">5</button>
+                            <button class="number-key" data-value="6">6</button>
+                        </div>
+                        <div class="number-row">
+                            <button class="number-key" data-value="7">7</button>
+                            <button class="number-key" data-value="8">8</button>
+                            <button class="number-key" data-value="9">9</button>
+                        </div>
+                        <div class="number-row">
+                            <button class="number-key" data-value="0">0</button>
+                            <button id="check-btn" class="check-answer-btn">こたえあわせ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 結果画面 -->
+            <div id="result-screen">
+                <div class="result-header">
+                    <h2>おつかれさま！</h2>
+                    <div class="result-message">とてもじょうずにできたね！</div>
+                </div>
+                
+                <div class="result-stats">
+                    <div class="stat-row">
+                        <div class="stat-label">せいかい:</div>
+                        <div class="stat-value"><span id="correct-count">8</span>/<span id="total-count">10</span>もん</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">かかったじかん:</div>
+                        <div class="stat-value"><span id="minutes">2</span>ふん<span id="seconds">15</span>びょう</div>
+                    </div>
+                </div>
+                
+                <button id="retry-btn" class="retry-btn">もういちど やる</button>
+                
+                <!-- 間違えた問題の復習エリア -->
+                <div id="review-area">
+                    <h3>まちがえたもんだい</h3>
+                    <div id="review-problems"></div>
+                    <button id="review-btn" class="review-btn">もう一度やってみる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let currentNum1 = 0;
+        let currentNum2 = 0;
+        let currentOperator = '+';
+        let correctCount = 0;
+        let totalCount = 0;
+        let maxProblems = 10;
+        let startTime = 0;
+        let wrongProblems = [];
+        let currentAnswer = '';
+        let problemResults = [];
+        let userSettings = {
+            difficulty: 'easy',
+            operators: ['+'],
+            problemCount: 10,
+            maxNumber: 10
+        };
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', init);
+
+        function init() {
+            // 数字キーパッドのイベントリスナー
+            const numberKeys = document.querySelectorAll('.number-key');
+            numberKeys.forEach(key => {
+                key.addEventListener('click', () => {
+                    const number = key.getAttribute('data-value');
+                    addNumberToAnswer(number);
+                });
+            });
+
+            // チェックボタン
+            const checkButton = document.getElementById('check-btn');
+            checkButton.addEventListener('click', checkAnswer);
+
+            // スタートボタン
+            const startButton = document.getElementById('start-btn');
+            startButton.addEventListener('click', startGame);
+
+            // リトライボタン
+            const retryButton = document.getElementById('retry-btn');
+            retryButton.addEventListener('click', () => {
+                hideScreen('result-screen');
+                showScreen('start-screen');
+            });
+
+            // 復習ボタン
+            const reviewButton = document.getElementById('review-btn');
+            reviewButton.addEventListener('click', reviewWrongProblems);
+
+            // 難易度設定
+            const easyBtn = document.getElementById('easy-btn');
+            const normalBtn = document.getElementById('normal-btn');
+            const hardBtn = document.getElementById('hard-btn');
+            
+            easyBtn.addEventListener('click', () => setDifficulty('easy'));
+            normalBtn.addEventListener('click', () => setDifficulty('normal'));
+            hardBtn.addEventListener('click', () => setDifficulty('hard'));
+
+            // 演算子ボタン
+            const opButtons = document.querySelectorAll('.op-btn');
+            opButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const op = btn.getAttribute('data-op');
+                    toggleOperator(btn, op);
+                });
+            });
+
+            // 問題数ボタン
+            const optionButtons = document.querySelectorAll('.option-btn[data-value]');
+            optionButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const value = parseInt(btn.getAttribute('data-value'));
+                    setProblemCount(btn, value);
+                });
+            });
+
+            // キーボード入力
+            document.addEventListener('keydown', handleKeyboardInput);
+
+            // 初期状態の設定
+            showScreen('start-screen');
+            hideScreen('game-screen');
+            hideScreen('result-screen');
+        }
+
+        // 画面表示切り替え
+        function showScreen(screenId) {
+            document.getElementById(screenId).style.display = 'block';
+        }
+
+        function hideScreen(screenId) {
+            document.getElementById(screenId).style.display = 'none';
+        }
+
+        // 難易度設定
+        function setDifficulty(difficulty) {
+            userSettings.difficulty = difficulty;
+            
+            // ボタンの状態更新
+            document.querySelectorAll('#easy-btn, #normal-btn, #hard-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById(difficulty + '-btn').classList.add('active');
+            
+            if (difficulty === 'easy') {
+                userSettings.maxNumber = 10;
+            } else if (difficulty === 'normal') {
+                userSettings.maxNumber = 20;
+            } else {
+                userSettings.maxNumber = 30;
+            }
+        }
+
+        // 演算子設定
+        function toggleOperator(button, operator) {
+            button.classList.toggle('active');
+            
+            if (button.classList.contains('active')) {
+                // 演算子を追加
+                if (!userSettings.operators.includes(operator)) {
+                    userSettings.operators.push(operator);
+                }
+            } else {
+                // 演算子を削除（ただし少なくとも1つは必要）
+                if (userSettings.operators.length > 1) {
+                    userSettings.operators = userSettings.operators.filter(op => op !== operator);
+                } else {
+                    // 最後の1つは削除できないようにする
+                    button.classList.add('active');
+                }
+            }
+        }
+
+        // 問題数設定
+        function setProblemCount(button, count) {
+            userSettings.problemCount = count;
+            maxProblems = count;
+            
+            // ボタンの状態更新
+            document.querySelectorAll('.option-btn[data-value]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+        }
+
+        // ゲーム開始
+        function startGame() {
+            // 演算子が選択されているか確認
+            if (userSettings.operators.length === 0) {
+                alert('けいさんのしゅるいを えらんでください');
+                return;
+            }
+            
+            // カウンターをリセット
+            correctCount = 0;
+            totalCount = 0;
+            problemResults = [];
+            wrongProblems = [];
+            
+            // 最大問題数の設定
+            maxProblems = userSettings.problemCount;
+            document.getElementById('total-problems').textContent = maxProblems;
+            
+            // 開始時間を記録
+            startTime = Date.now();
+            
+            // 画面切り替え
+            hideScreen('start-screen');
+            hideScreen('result-screen');
+            showScreen('game-screen');
+            
+            // 最初の問題を生成
+            generateProblem();
+        }
+
+        // 問題生成
+        function generateProblem() {
+            // 問題数に達したらゲーム終了
+            if (totalCount >= maxProblems) {
+                endGame();
+                return;
+            }
+            
+            // 問題番号を更新
+            document.getElementById('current-problem').textContent = totalCount + 1;
+            
+            const maxNumber = userSettings.maxNumber;
+            
+            // 現在の入力をリセット
+            currentAnswer = '';
+            document.querySelector('.answer-placeholder').textContent = '?';
+            
+            // メッセージを更新
+            document.getElementById('message-box').textContent = 'こたえをいれてね';
+            document.getElementById('message-box').className = 'message-box';
+            
+            // 演算子の選択
+            currentOperator = userSettings.operators[Math.floor(Math.random() * userSettings.operators.length)];
+            document.getElementById('operator').textContent = currentOperator;
+            
+            if (currentOperator === '+') {
+                // たしざんの場合
+                currentNum1 = Math.floor(Math.random() * maxNumber) + 1;
+                currentNum2 = Math.floor(Math.random() * maxNumber) + 1;
+            } else if (currentOperator === '-') {
+                // ひきざんの場合（答えが負にならないように）
+                currentNum1 = Math.floor(Math.random() * maxNumber) + 1;
+                currentNum2 = Math.floor(Math.random() * currentNum1) + 1;
+            } else if (currentOperator === '×') {
+                // かけざんの場合
+                currentNum1 = Math.floor(Math.random() * (maxNumber / 2)) + 1;
+                currentNum2 = Math.floor(Math.random() * (maxNumber / 2)) + 1;
+            }
+            
+            document.getElementById('num1').textContent = currentNum1;
+            document.getElementById('num2').textContent = currentNum2;
+            
+            // 残りポイント表示
+            document.getElementById('points').textContent = `${(maxProblems - totalCount) * 10}ぴょう`;
+        }
+
+        // 数字入力
+        function addNumberToAnswer(number) {
+            // 2桁以上にならないようにする
+            if (currentAnswer.length < 2) {
+                currentAnswer += number;
+                const answerPlaceholder = document.querySelector('.answer-placeholder');
+                answerPlaceholder.textContent = currentAnswer;
+                answerPlaceholder.classList.add('pop');
+                setTimeout(() => {
+                    answerPlaceholder.classList.remove('pop');
+                }, 300);
+            }
+        }
+
+        // 答え合わせ
+        function checkAnswer() {
+            if (currentAnswer === '') {
+                document.getElementById('message-box').textContent = 'こたえを にゅうりょくしてね';
+                return;
+            }
+            
+            let correctAnswer;
+            if (currentOperator === '+') {
+                correctAnswer = currentNum1 + currentNum2;
+            } else if (currentOperator === '-') {
+                correctAnswer = currentNum1 - currentNum2;
+            } else if (currentOperator === '×') {
+                correctAnswer = currentNum1 * currentNum2;
+            }
+            
+            const isCorrect = parseInt(currentAnswer) === correctAnswer;
+            
+            // 結果を記録
+            totalCount++;
+            if (isCorrect) {
+                correctCount++;
+                document.getElementById('message-box').textContent = 'せいかい！';
+                document.getElementById('message-box').className = 'message-box correct';
+            } else {
+                document.getElementById('message-box').textContent = `ざんねん！ こたえは ${correctAnswer}`;
+                document.getElementById('message-box').className = 'message-box incorrect';
+                
+                // 間違えた問題を記録
+                wrongProblems.push({
+                    num1: currentNum1,
+                    num2: currentNum2,
+                    operator: currentOperator,
+                    correctAnswer: correctAnswer,
+                    userAnswer: currentAnswer
+                });
+            }
+            
+            // 結果を配列に保存
+            problemResults.push({
+                num1: currentNum1,
+                num2: currentNum2,
+                operator: currentOperator,
+                userAnswer: parseInt(currentAnswer),
+                correctAnswer: correctAnswer,
+                isCorrect: isCorrect
+            });
+            
+            // 少し待ってから次の問題へ
+            setTimeout(() => {
+                generateProblem();
+            }, 1000);
+        }
+
+        // ゲーム終了
+        function endGame() {
+            const endTime = Date.now();
+            const totalTimeInSeconds = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(totalTimeInSeconds / 60);
+            const seconds = totalTimeInSeconds % 60;
+            
+            // 結果表示
+            document.getElementById('correct-count').textContent = correctCount;
+            document.getElementById('total-count').textContent = totalCount;
+            document.getElementById('minutes').textContent = minutes;
+            document.getElementById('seconds').textContent = seconds;
+            
+            // 結果メッセージ
+            const resultMessageElement = document.querySelector('.result-message');
+            if (correctCount === totalCount) {
+                resultMessageElement.textContent = 'パーフェクト！すごいね！';
+            } else if (correctCount / totalCount >= 0.8) {
+                resultMessageElement.textContent = 'とてもじょうずにできたね！';
+            } else if (correctCount / totalCount >= 0.6) {
+                resultMessageElement.textContent = 'よくがんばったね！';
+            } else {
+                resultMessageElement.textContent = 'つぎはもっとがんばろう！';
+            }
+            
+            // 画面切り替え
+            hideScreen('game-screen');
+            showScreen('result-screen');
+            
+            // 間違えた問題があれば復習エリアを表示
+            if (wrongProblems.length > 0) {
+                showWrongProblems();
+            } else {
+                document.getElementById('review-area').style.display = 'none';
+            }
+        }
+
+        // 間違えた問題を表示
+        function showWrongProblems() {
+            const reviewArea = document.getElementById('review-area');
+            const reviewProblemsElement = document.getElementById('review-problems');
+            
+            reviewProblemsElement.innerHTML = '';
+            
+            wrongProblems.forEach(problem => {
+                const problemElement = document.createElement('div');
+                problemElement.className = 'review-problem';
+                problemElement.innerHTML = `
+                    ${problem.num1} ${problem.operator} ${problem.num2} = <span class="correct">${problem.correctAnswer}</span>
+                    (あなた: <span class="incorrect">${problem.userAnswer}</span>)
+                `;
+                reviewProblemsElement.appendChild(problemElement);
+            });
+            
+            reviewArea.style.display = 'block';
+        }
+
+        // 間違えた問題を復習
+        function reviewWrongProblems() {
+            // 間違えた問題だけでゲームを再開
+            maxProblems = wrongProblems.length;
+            const tempWrongProblems = [...wrongProblems];
+            wrongProblems = [];
+            
+            // 復習エリアを非表示
+            document.getElementById('review-area').style.display = 'none';
+            hideScreen('result-screen');
+            
+            // ゲーム再開
+            startGame();
+            
+            // 通常の問題生成をスキップして間違えた問題を使う
+            const originalGenerateProblem = generateProblem;
+            generateProblem = function() {
+                if (totalCount >= maxProblems || tempWrongProblems.length === 0) {
+                    endGame();
+                    return;
+                }
+                
+                // 問題番号を更新
+                document.getElementById('current-problem').textContent = totalCount + 1;
+                
+                const problem = tempWrongProblems.pop();
+                currentNum1 = problem.num1;
+                currentNum2 = problem.num2;
+                currentOperator = problem.operator;
+                
+                document.getElementById('num1').textContent = currentNum1;
+                document.getElementById('num2').textContent = currentNum2;
+                document.getElementById('operator').textContent = currentOperator;
+                
+                // 残りポイント表示
+                document.getElementById('points').textContent = `${(maxProblems - totalCount) * 10}ぴょう`;
+            }
+        }
+    </script>
+</body>
+</html> 
