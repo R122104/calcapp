@@ -140,6 +140,15 @@
             font-weight: bold;
         }
 
+        .difficulty-indicator {
+            background-color: #ffd43b;
+            color: #212529;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
         .points {
             background-color: #4285f4;
             color: white;
@@ -356,6 +365,7 @@
                             <button class="option-btn active" id="easy-btn">かんたん</button>
                             <button class="option-btn" id="normal-btn">ふつう</button>
                             <button class="option-btn" id="hard-btn">むずかしい</button>
+                            <button class="option-btn" id="random-btn">ランダム</button>
                         </div>
                     </div>
                     
@@ -396,6 +406,7 @@
                         <div class="progress-text">
                             <span id="current-problem">1</span> / <span id="total-problems">10</span>
                         </div>
+                        <div class="difficulty-indicator" id="difficulty-indicator">かんたん</div>
                         <div class="points" id="points">100ぴょう</div>
                     </div>
                 </div>
@@ -487,7 +498,8 @@
             difficulty: 'easy',
             operators: ['+'],
             problemCount: 10,
-            maxNumber: 10
+            maxNumber: 10,
+            isRandomDifficulty: false
         };
 
         // 初期化
@@ -530,10 +542,12 @@
             const easyBtn = document.getElementById('easy-btn');
             const normalBtn = document.getElementById('normal-btn');
             const hardBtn = document.getElementById('hard-btn');
+            const randomBtn = document.getElementById('random-btn');
             
             easyBtn.addEventListener('click', () => setDifficulty('easy'));
             normalBtn.addEventListener('click', () => setDifficulty('normal'));
             hardBtn.addEventListener('click', () => setDifficulty('hard'));
+            randomBtn.addEventListener('click', () => setDifficulty('random'));
 
             // 演算子ボタン
             const opButtons = document.querySelectorAll('.op-btn');
@@ -574,20 +588,23 @@
         // 難易度設定
         function setDifficulty(difficulty) {
             userSettings.difficulty = difficulty;
+            userSettings.isRandomDifficulty = (difficulty === 'random');
             
             // ボタンの状態更新
-            document.querySelectorAll('#easy-btn, #normal-btn, #hard-btn').forEach(btn => {
+            document.querySelectorAll('#easy-btn, #normal-btn, #hard-btn, #random-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             
             document.getElementById(difficulty + '-btn').classList.add('active');
             
-            if (difficulty === 'easy') {
-                userSettings.maxNumber = 10;
-            } else if (difficulty === 'normal') {
-                userSettings.maxNumber = 20;
-            } else {
-                userSettings.maxNumber = 30;
+            if (!userSettings.isRandomDifficulty) {
+                if (difficulty === 'easy') {
+                    userSettings.maxNumber = 10;
+                } else if (difficulty === 'normal') {
+                    userSettings.maxNumber = 20;
+                } else {
+                    userSettings.maxNumber = 30;
+                }
             }
         }
 
@@ -649,6 +666,17 @@
             hideScreen('result-screen');
             showScreen('game-screen');
             
+            // 難易度表示の初期化
+            if (userSettings.difficulty === 'easy') {
+                document.getElementById('difficulty-indicator').textContent = 'かんたん';
+            } else if (userSettings.difficulty === 'normal') {
+                document.getElementById('difficulty-indicator').textContent = 'ふつう';
+            } else if (userSettings.difficulty === 'hard') {
+                document.getElementById('difficulty-indicator').textContent = 'むずかしい';
+            } else {
+                document.getElementById('difficulty-indicator').textContent = 'ランダム';
+            }
+            
             // 最初の問題を生成
             generateProblem();
         }
@@ -663,6 +691,34 @@
             
             // 問題番号を更新
             document.getElementById('current-problem').textContent = totalCount + 1;
+            
+            // ランダム難易度の場合、問題ごとに難易度を変更
+            if (userSettings.isRandomDifficulty) {
+                const difficulties = ['easy', 'normal', 'hard'];
+                const randomDifficulty = difficulties[Math.floor(Math.random() * difficulties.length)];
+                
+                if (randomDifficulty === 'easy') {
+                    userSettings.maxNumber = 10;
+                    document.getElementById('difficulty-indicator').textContent = 'かんたん';
+                } else if (randomDifficulty === 'normal') {
+                    userSettings.maxNumber = 20;
+                    document.getElementById('difficulty-indicator').textContent = 'ふつう';
+                } else {
+                    userSettings.maxNumber = 30;
+                    document.getElementById('difficulty-indicator').textContent = 'むずかしい';
+                }
+            } else {
+                // 固定難易度の表示
+                if (userSettings.difficulty === 'easy') {
+                    document.getElementById('difficulty-indicator').textContent = 'かんたん';
+                } else if (userSettings.difficulty === 'normal') {
+                    document.getElementById('difficulty-indicator').textContent = 'ふつう';
+                } else if (userSettings.difficulty === 'hard') {
+                    document.getElementById('difficulty-indicator').textContent = 'むずかしい';
+                } else {
+                    document.getElementById('difficulty-indicator').textContent = 'ランダム';
+                }
+            }
             
             const maxNumber = userSettings.maxNumber;
             
