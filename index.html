@@ -228,7 +228,7 @@
             gap: 8px;
         }
 
-        .number-key, .check-answer-btn {
+        .number-key, .delete-key, .check-answer-btn {
             flex: 1;
             aspect-ratio: 1;
             padding: 10px;
@@ -240,8 +240,13 @@
             cursor: pointer;
         }
 
+        .delete-key {
+            background-color: #ffa8a8;
+            color: #212529;
+        }
+
         .check-answer-btn {
-            flex: 2;
+            flex: 1;
             aspect-ratio: initial;
             background-color: #4285f4;
             color: white;
@@ -369,6 +374,7 @@
                             <button class="op-btn active" data-op="+">+</button>
                             <button class="op-btn" data-op="-">-</button>
                             <button class="op-btn" data-op="×">×</button>
+                            <button class="op-btn" data-op="÷">÷</button>
                         </div>
                     </div>
                 </div>
@@ -428,6 +434,7 @@
                         </div>
                         <div class="number-row">
                             <button class="number-key" data-value="0">0</button>
+                            <button class="delete-key" id="delete-btn">けす</button>
                             <button id="check-btn" class="check-answer-btn">こたえあわせ</button>
                         </div>
                     </div>
@@ -495,6 +502,10 @@
                     addNumberToAnswer(number);
                 });
             });
+
+            // 削除ボタン
+            const deleteButton = document.getElementById('delete-btn');
+            deleteButton.addEventListener('click', deleteLastDigit);
 
             // チェックボタン
             const checkButton = document.getElementById('check-btn');
@@ -679,6 +690,9 @@
                 // かけざんの場合
                 currentNum1 = Math.floor(Math.random() * (maxNumber / 2)) + 1;
                 currentNum2 = Math.floor(Math.random() * (maxNumber / 2)) + 1;
+            } else if (currentOperator === '÷') {
+                // わりざんの場合（割り切れる問題のみ）
+                generateDivisionProblem(maxNumber);
             }
             
             document.getElementById('num1').textContent = currentNum1;
@@ -688,13 +702,52 @@
             document.getElementById('points').textContent = `${(maxProblems - totalCount) * 10}ぴょう`;
         }
 
+        // 割り算問題生成（割り切れる問題のみ）
+        function generateDivisionProblem(maxNumber) {
+            // 難易度に応じて除数（割る数）の最大値を設定
+            let maxDivisor;
+            if (userSettings.difficulty === 'easy') {
+                maxDivisor = 5;
+            } else if (userSettings.difficulty === 'normal') {
+                maxDivisor = 9;
+            } else {
+                maxDivisor = 12;
+            }
+            
+            // 除数（割る数）を決定（1は除く）
+            currentNum2 = Math.floor(Math.random() * (maxDivisor - 1)) + 2;
+            
+            // 商（答え）を決定
+            const maxQuotient = Math.min(Math.floor(maxNumber / currentNum2), 10);
+            const quotient = Math.floor(Math.random() * maxQuotient) + 1;
+            
+            // 被除数（割られる数）を計算
+            currentNum1 = currentNum2 * quotient;
+        }
+
         // 数字入力
         function addNumberToAnswer(number) {
-            // 2桁以上にならないようにする
-            if (currentAnswer.length < 2) {
+            // 3桁までの入力を許可
+            if (currentAnswer.length < 3) {
                 currentAnswer += number;
                 const answerPlaceholder = document.querySelector('.answer-placeholder');
                 answerPlaceholder.textContent = currentAnswer;
+                answerPlaceholder.classList.add('pop');
+                setTimeout(() => {
+                    answerPlaceholder.classList.remove('pop');
+                }, 300);
+            }
+        }
+
+        // 入力を削除する関数
+        function deleteLastDigit() {
+            if (currentAnswer.length > 0) {
+                // 最後の1文字を削除
+                currentAnswer = currentAnswer.slice(0, -1);
+                
+                // 表示を更新
+                const answerPlaceholder = document.querySelector('.answer-placeholder');
+                answerPlaceholder.textContent = currentAnswer === '' ? '?' : currentAnswer;
                 answerPlaceholder.classList.add('pop');
                 setTimeout(() => {
                     answerPlaceholder.classList.remove('pop');
@@ -716,6 +769,8 @@
                 correctAnswer = currentNum1 - currentNum2;
             } else if (currentOperator === '×') {
                 correctAnswer = currentNum1 * currentNum2;
+            } else if (currentOperator === '÷') {
+                correctAnswer = currentNum1 / currentNum2;
             }
             
             const isCorrect = parseInt(currentAnswer) === correctAnswer;
@@ -849,6 +904,22 @@
                 
                 // 残りポイント表示
                 document.getElementById('points').textContent = `${(maxProblems - totalCount) * 10}ぴょう`;
+            }
+        }
+
+        // キーボード入力処理
+        function handleKeyboardInput(event) {
+            // 数字キー (0-9)
+            if (event.key >= '0' && event.key <= '9') {
+                addNumberToAnswer(event.key);
+            } 
+            // Enterキー（答え合わせ）
+            else if (event.key === 'Enter') {
+                checkAnswer();
+            } 
+            // Backspaceキー（1文字削除）
+            else if (event.key === 'Backspace') {
+                deleteLastDigit();
             }
         }
     </script>
