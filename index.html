@@ -934,20 +934,51 @@
             // 復習エリアを非表示
             document.getElementById('review-area').style.display = 'none';
             hideScreen('result-screen');
+            showScreen('game-screen');
             
-            // ゲーム再開
-            startGame();
+            // カウンターをリセット
+            correctCount = 0;
+            totalCount = 0;
+            problemResults = [];
+            
+            // 開始時間を記録
+            startTime = Date.now();
+            
+            // 問題番号を更新
+            document.getElementById('current-problem').textContent = 1;
+            document.getElementById('total-problems').textContent = maxProblems;
+            
+            // 難易度表示の更新
+            if (userSettings.difficulty === 'easy') {
+                document.getElementById('difficulty-indicator').textContent = 'かんたん';
+            } else if (userSettings.difficulty === 'normal') {
+                document.getElementById('difficulty-indicator').textContent = 'ふつう';
+            } else if (userSettings.difficulty === 'hard') {
+                document.getElementById('difficulty-indicator').textContent = 'むずかしい';
+            } else {
+                document.getElementById('difficulty-indicator').textContent = 'ランダム';
+            }
             
             // 通常の問題生成をスキップして間違えた問題を使う
             const originalGenerateProblem = generateProblem;
             generateProblem = function() {
                 if (totalCount >= maxProblems || tempWrongProblems.length === 0) {
+                    // 元の関数を復元
+                    generateProblem = originalGenerateProblem;
                     endGame();
                     return;
                 }
                 
                 // 問題番号を更新
                 document.getElementById('current-problem').textContent = totalCount + 1;
+                
+                // 現在の入力をリセット
+                currentAnswer = '';
+                document.querySelector('.answer-placeholder').textContent = '?';
+                
+                // メッセージを更新
+                document.getElementById('message-box').textContent = 'こたえをいれてね';
+                document.getElementById('message-box').className = 'message-box';
                 
                 const problem = tempWrongProblems.pop();
                 currentNum1 = problem.num1;
@@ -960,7 +991,10 @@
                 
                 // 残りポイント表示
                 document.getElementById('points').textContent = `${(maxProblems - totalCount) * 10}ぴょう`;
-            }
+            };
+            
+            // 最初の問題を生成
+            generateProblem();
         }
 
         // キーボード入力処理
